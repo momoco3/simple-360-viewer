@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>360 Viewer</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    .topbar {
+      padding: 16px;
+      background: #1b1b1b;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-bottom: 1px solid #333;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="file"] {
+      color: white;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #32c8ff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #bbb;
+      line-height: 1.6;
+    }
+
+    #panorama {
+      width: 100%;
+      height: calc(100vh - 140px);
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div><strong>360 Viewer（Equirectangular Image 用）</strong></div>
+
+    <div class="row">
+      <label>PC内の画像を読み込む：</label>
+      <input type="file" id="fileInput" accept="image/*" />
+      <button onclick="loadFromFile()">ファイルを読み込む</button>
+    </div>
+
+    <div class="note">
+      ※ 横長の <b>equirectangular（全天球）画像</b> を読み込んでください。<br>
+      ※ GitHub Pages に置けば無料で公開できます。
+    </div>
+  </div>
+
+  <div id="panorama"></div>
+
+  <script>
+    let viewer = null;
+
+    function createViewer(imagePath) {
+      if (viewer) {
+        viewer.destroy();
+      }
+
+      viewer = pannellum.viewer('panorama', {
+        type: 'equirectangular',
+        panorama: imagePath,
+        autoLoad: true,
+        showZoomCtrl: true,
+        showFullscreenCtrl: true,
+        compass: false,
+        pitch: 0,
+        yaw: 0,
+        hfov: 100
+      });
+    }
+
+    function loadFromFile() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('画像ファイルを選んでください');
+        return;
+      }
+
+      const imageUrl = URL.createObjectURL(file);
+      createViewer(imageUrl);
+    }
+  </script>
+</body>
+</html>
