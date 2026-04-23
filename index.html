@@ -9,35 +9,58 @@
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
   <style>
-    body {
+    html, body {
       margin: 0;
+      width: 100%;
+      height: 100%;
       font-family: sans-serif;
       background: #111;
       color: #fff;
+      overflow: hidden;
     }
 
-    .topbar {
-      padding: 16px;
-      background: #1b1b1b;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      border-bottom: 1px solid #333;
+    #panorama {
+      width: 100%;
+      height: 100%;
+      background: #000;
     }
 
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-
-    input[type="file"] {
+    #dropZone {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 10;
+      padding: 14px 18px;
+      border: 2px dashed rgba(255,255,255,0.6);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px);
       color: white;
+      font-size: 14px;
+      line-height: 1.6;
+      transition: 0.2s ease;
+      user-select: none;
     }
 
-    button {
-      padding: 10px 14px;
+    #dropZone.dragover {
+      background: rgba(50, 200, 255, 0.22);
+      border-color: #32c8ff;
+      box-shadow: 0 0 0 4px rgba(50, 200, 255, 0.15);
+    }
+
+    #dropZone strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    #dropZone button {
+      margin-top: 8px;
+      padding: 8px 12px;
       border: none;
       border-radius: 8px;
       background: #32c8ff;
@@ -46,37 +69,31 @@
       cursor: pointer;
     }
 
-    button:hover {
+    #dropZone button:hover {
       opacity: 0.9;
     }
 
-    .note {
-      font-size: 13px;
-      color: #bbb;
-      line-height: 1.6;
-    }
-
-    #panorama {
-      width: 100%;
-      height: calc(100vh - 140px);
-      background: #000;
+    @media (max-width: 640px) {
+      #dropZone {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        font-size: 13px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div><strong>360 Viewer（Equirectangular Image 用）</strong></div>
-
-    <div class="row">
-      <label>PC内の画像を読み込む：</label>
-      <input type="file" id="fileInput" accept="image/*" />
-      <button onclick="loadFromFile()">ファイルを読み込む</button>
-    </div>
-
-    <div class="note">
-      ※ 横長の <b>equirectangular（全天球）画像</b> を読み込んでください。<br>
-      ※ GitHub Pages に置けば無料で公開できます。
-    </div>
+  <div id="dropZone">
+    <strong>ここに画像を入れる</strong>
+    画像をドラッグ＆ドロップしてください
+    <br>
+    または
+    <br>
+    <button type="button" onclick="document.getElementById('fileInput').click()">
+      画像を選ぶ
+    </button>
+    <input type="file" id="fileInput" accept="image/*">
   </div>
 
   <div id="panorama"></div>
@@ -102,17 +119,43 @@
       });
     }
 
-    function loadFromFile() {
-      const fileInput = document.getElementById('fileInput');
-      const file = fileInput.files[0];
-      if (!file) {
-        alert('画像ファイルを選んでください');
+    function loadFromFile(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        alert('画像ファイルを入れてください');
         return;
       }
 
       const imageUrl = URL.createObjectURL(file);
       createViewer(imageUrl);
     }
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+
+      const file = e.dataTransfer.files[0];
+      loadFromFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      loadFromFile(file);
+    });
+
+    // 初期表示画像
+    createViewer('panorama.jpg');
   </script>
 </body>
 </html>
